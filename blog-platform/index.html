@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Blog Platform</title>
+  <style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        color: #2d3748;
+        line-height: 1.6;
+        min-height: 100vh;
+    }
+    
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    header {
+        background: linear-gradient(135deg, #2c3e50 0%, #4a6572 100%);
+        color: white;
+        padding: 1.5rem 2rem;
+        margin-bottom: 2.5rem;
+        border-radius: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #fff 0%, #a0aec0 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: 600;
+        margin: 5px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    .btn:hover::before {
+        left: 100%;
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+    }
+    
+    .btn:active {
+        transform: translateY(0);
+    }
+    
+    .btn-danger {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+    }
+    
+    .btn-danger:hover {
+        box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+    }
+    
+    .btn-success {
+        background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+    }
+    
+    .btn-success:hover {
+        box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
+    }
+    
+    .posts-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 25px;
+        margin-bottom: 40px;
+    }
+    
+    .post-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 16px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        padding: 25px;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .post-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+    }
+    
+    .post-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    }
+    
+    .post-title {
+        font-size: 1.6rem;
+        margin-bottom: 15px;
+        color: #2c3e50;
+        font-weight: 700;
+        line-height: 1.3;
+        background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    
+    .post-content {
+        color: #4a5568;
+        margin-bottom: 20px;
+        line-height: 1.6;
+        font-size: 1.05rem;
+    }
+    
+    .post-date {
+        color: #718096;
+        font-size: 0.9rem;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .post-date::before {
+        content: '📅';
+        font-size: 1rem;
+    }
+    
+    .post-actions {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+        gap: 10px;
+    }
+    
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        backdrop-filter: blur(5px);
+        animation: modalFadeIn 0.3s ease;
+    }
+    
+    @keyframes modalFadeIn {
+        from {
+            opacity: 0;
+            backdrop-filter: blur(0px);
+        }
+        to {
+            opacity: 1;
+            backdrop-filter: blur(5px);
+        }
+    }
+    
+    .modal-content {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        padding: 35px;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        width: 90%;
+        max-width: 650px;
+        animation: modalContentSlideIn 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    @keyframes modalContentSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-30px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+    
+    .modal h2 {
+        margin-bottom: 25px;
+        color: #2c3e50;
+        text-align: center;
+        font-size: 2rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    
+    .form-group {
+        margin-bottom: 25px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 10px;
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 1.1rem;
+    }
+    
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 15px;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.9);
+    }
+    
+    .form-group input:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .form-group textarea {
+        min-height: 180px;
+        resize: vertical;
+        line-height: 1.5;
+    }
+    
+    .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 15px;
+        margin-top: 25px;
+    }
+    
+    .no-posts {
+        text-align: center;
+        padding: 60px 40px;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 16px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        grid-column: 1 / -1;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .no-posts p {
+        font-size: 1.4rem;
+        color: #718096;
+        margin-bottom: 25px;
+        font-weight: 500;
+    }
+    
+    .notification {
+        position: fixed;
+        top: 25px;
+        right: 25px;
+        padding: 18px 25px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        color: white;
+        box-shadow: 0 10px 30px rgba(46, 204, 113, 0.3);
+        display: none;
+        z-index: 1001;
+        animation: notificationSlideIn 0.3s ease;
+        max-width: 350px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    @keyframes notificationSlideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    .notification.error {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        box-shadow: 0 10px 30px rgba(231, 76, 60, 0.3);
+    }
+    
+    .loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 200px;
+        grid-column: 1 / -1;
+    }
+    
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+        body {
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            color: #e2e8f0;
+        }
+        
+        .post-card,
+        .no-posts,
+        .modal-content {
+            background: rgba(45, 55, 72, 0.95);
+            color: #e2e8f0;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .post-title {
+            background: linear-gradient(135deg, #fff 0%, #a0aec0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .post-content {
+            color: #cbd5e0;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            background: rgba(26, 32, 44, 0.9);
+            color: #e2e8f0;
+            border-color: #4a5568;
+        }
+        
+        .form-group label {
+            color: #e2e8f0;
+        }
+    }
+    
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .posts-container {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        header {
+            flex-direction: column;
+            text-align: center;
+            gap: 15px;
+            padding: 1.5rem;
+        }
+        
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: 0;
+        }
+        
+        .modal-content {
+            padding: 25px;
+            margin: 20px;
+        }
+        
+        .modal-actions {
+            flex-direction: column;
+        }
+        
+        .btn {
+            width: 100%;
+            margin: 5px 0;
+        }
+        
+        .post-actions {
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .container {
+            padding: 15px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        header h1 {
+            font-size: 1.8rem;
+        }
+        
+        .post-card {
+            padding: 20px;
+        }
+        
+        .post-title {
+            font-size: 1.4rem;
+        }
+        
+        .modal-content {
+            padding: 20px;
+        }
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #2980b9 0%, #2c3e50 100%);
+    }
+        /* Confirmation Dialog Styles */
+    .confirmation-dialog {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+    }
+    
+    .dialog-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(5px);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .dialog-overlay.active {
+        opacity: 1;
+    }
+    
+    .dialog-content {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 450px;
+        width: 90%;
+        z-index: 2001;
+        transform: scale(0.9) translateY(20px);
+        opacity: 0;
+        transition: all 0.3s ease;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .dialog-content.active {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+    
+    .dialog-title {
+        font-size: 1.8rem;
+        margin-bottom: 15px;
+        color: #2c3e50;
+        font-weight: 700;
+        background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    
+    .dialog-message {
+        color: #4a5568;
+        margin-bottom: 25px;
+        font-size: 1.1rem;
+        line-height: 1.5;
+    }
+    
+    .dialog-actions {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+    }
+    
+    .btn-cancel {
+        background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+        box-shadow: 0 4px 15px rgba(113, 128, 150, 0.3);
+    }
+    
+    .btn-cancel:hover {
+        box-shadow: 0 6px 20px rgba(113, 128, 150, 0.4);
+    }
+    
+    .btn-confirm {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+    }
+    
+    .btn-confirm:hover {
+        box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+    }
+    
+    /* Success notification style */
+    .notification.success {
+        background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        box-shadow: 0 10px 30px rgba(46, 204, 113, 0.3);
+    }
+    
+    /* Responsive design for dialog */
+    @media (max-width: 480px) {
+        .dialog-content {
+            padding: 25px 20px;
+        }
+        
+        .dialog-title {
+            font-size: 1.5rem;
+        }
+        
+        .dialog-message {
+            font-size: 1rem;
+        }
+        
+        .dialog-actions {
+            flex-direction: column;
+        }
+        
+        .btn-cancel,
+        .btn-confirm {
+            width: 100%;
+        }
+    }
+</style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Simple Blog Platform</h1>
+            <button class="btn" id="new-post-btn">New Post</button>
+        </header>
+        
+        <div class="posts-container" id="posts-container">
+            <!-- Posts will be dynamically inserted here -->
+        </div>
+        
+        <!-- Modal for creating/editing posts -->
+        <div class="modal" id="post-modal">
+            <div class="modal-content">
+                <h2 id="modal-title">Create New Post</h2>
+                <form id="post-form">
+                    <input type="hidden" id="post-id">
+                    <div class="form-group">
+                        <label for="post-title">Title</label>
+                        <input type="text" id="post-title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="post-content">Content</label>
+                        <textarea id="post-content" required></textarea>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn" id="cancel-btn">Cancel</button>
+                        <button type="submit" class="btn btn-success">Save Post</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="notification" id="notification"></div>
+    </div>
+
+<script>
+    const API_BASE_URL = '/api';
+    
+    // DOM elements
+    const postsContainer = document.getElementById('posts-container');
+    const postModal = document.getElementById('post-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const postForm = document.getElementById('post-form');
+    const postIdInput = document.getElementById('post-id');
+    const postTitleInput = document.getElementById('post-title');
+    const postContentInput = document.getElementById('post-content');
+    const newPostBtn = document.getElementById('new-post-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const notification = document.getElementById('notification');
+    
+    // Create custom confirmation dialog
+    function createConfirmationDialog() {
+        const dialog = document.createElement('div');
+        dialog.className = 'confirmation-dialog';
+        dialog.innerHTML = `
+            <div class="dialog-overlay"></div>
+            <div class="dialog-content">
+                <h3 class="dialog-title">Confirm Action</h3>
+                <p class="dialog-message">Are you sure you want to perform this action?</p>
+                <div class="dialog-actions">
+                    <button class="btn btn-cancel">Cancel</button>
+                    <button class="btn btn-confirm">Confirm</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(dialog);
+        return dialog;
+    }
+    
+    // Show confirmation dialog
+    function showConfirmation(message, title = 'Confirm Action') {
+        return new Promise((resolve) => {
+            const dialog = createConfirmationDialog();
+            const overlay = dialog.querySelector('.dialog-overlay');
+            const content = dialog.querySelector('.dialog-content');
+            const titleEl = dialog.querySelector('.dialog-title');
+            const messageEl = dialog.querySelector('.dialog-message');
+            const cancelBtn = dialog.querySelector('.btn-cancel');
+            const confirmBtn = dialog.querySelector('.btn-confirm');
+            
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            
+            // Animation
+            setTimeout(() => {
+                overlay.classList.add('active');
+                content.classList.add('active');
+            }, 10);
+            
+            // Event listeners
+            const closeDialog = (result) => {
+                overlay.classList.remove('active');
+                content.classList.remove('active');
+                setTimeout(() => {
+                    dialog.remove();
+                    resolve(result);
+                }, 300);
+            };
+            
+            cancelBtn.addEventListener('click', () => closeDialog(false));
+            confirmBtn.addEventListener('click', () => closeDialog(true));
+            overlay.addEventListener('click', () => closeDialog(false));
+            
+            // Escape key to close
+            const escapeHandler = (e) => {
+                if (e.key === 'Escape') {
+                    closeDialog(false);
+                    document.removeEventListener('keydown', escapeHandler);
+                }
+            };
+            document.addEventListener('keydown', escapeHandler);
+        });
+    }
+    
+    // Show notification
+    function showNotification(message, isError = false, isSuccess = false) {
+        notification.textContent = message;
+        
+        if (isError) {
+            notification.className = 'notification error';
+        } else if (isSuccess) {
+            notification.className = 'notification success';
+        } else {
+            notification.className = 'notification';
+        }
+        
+        notification.style.display = 'block';
+        
+        setTimeout(() => {
+            notification.style.display = 'none';
+        }, 3000);
+    }
+    
+    // Load and display posts
+    async function loadPosts() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/posts`);
+            
+            if (!response.ok) {
+                throw new Error(`Server returned ${response.status} ${response.statusText}`);
+            }
+            
+            const posts = await response.json();
+            postsContainer.innerHTML = '';
+            
+            if (posts.length === 0) {
+                postsContainer.innerHTML = `
+                    <div class="no-posts">
+                        <p>No posts yet. Create your first post!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            posts.forEach(post => {
+                const postElement = document.createElement('div');
+                postElement.className = 'post-card';
+                postElement.innerHTML = `
+                    <h3 class="post-title">${post.title}</h3>
+                    <p class="post-date">Posted on: ${new Date(post.date).toLocaleDateString()}</p>
+                    <p class="post-content">${post.content}</p>
+                    <div class="post-actions">
+                        <button class="btn edit-btn" data-id="${post.id}">Edit</button>
+                        <button class="btn btn-danger delete-btn" data-id="${post.id}">Delete</button>
+                    </div>
+                `;
+                postsContainer.appendChild(postElement);
+            });
+            
+            // Add event listeners to the new buttons
+            document.querySelectorAll('.edit-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const id = e.target.getAttribute('data-id');
+                    editPost(id);
+                });
+            });
+            
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const id = e.target.getAttribute('data-id');
+                    deletePost(id);
+                });
+            });
+        } catch (error) {
+            console.error('Error loading posts:', error);
+            showNotification('Error loading posts. Please check if the server is running.', true);
+        }
+    }
+    
+    // Create new post
+    function createPost() {
+        postIdInput.value = '';
+        postTitleInput.value = '';
+        postContentInput.value = '';
+        modalTitle.textContent = 'Create New Post';
+        postModal.style.display = 'flex';
+    }
+    
+    // Edit existing post
+    async function editPost(id) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/posts/${id}`);
+            
+            if (!response.ok) {
+                throw new Error(`Server returned ${response.status} ${response.statusText}`);
+            }
+            
+            const post = await response.json();
+            
+            postIdInput.value = post.id;
+            postTitleInput.value = post.title;
+            postContentInput.value = post.content;
+            modalTitle.textContent = 'Edit Post';
+            postModal.style.display = 'flex';
+        } catch (error) {
+            console.error('Error loading post:', error);
+            showNotification('Error loading post', true);
+        }
+    }
+    
+    // Delete post
+    async function deletePost(id) {
+        const confirmed = await showConfirmation('Are you sure you want to delete this post? This action cannot be undone.', 'Confirm Deletion');
+        
+        if (!confirmed) return;
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/posts/${id}`, {
+                method: 'DELETE'
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Server returned ${response.status} ${response.statusText}`);
+            }
+            
+            showNotification('Post deleted successfully', false, true);
+            loadPosts();
+        } catch (error) {
+            console.error('Error deleting post:', error);
+            showNotification('Error deleting post', true);
+        }
+    }
+    
+    // Save post (create or update)
+    async function savePost(e) {
+        e.preventDefault();
+        
+        const postData = {
+            title: postTitleInput.value,
+            content: postContentInput.value
+        };
+        
+        const url = postIdInput.value ? 
+            `${API_BASE_URL}/posts/${postIdInput.value}` : 
+            `${API_BASE_URL}/posts`;
+        
+        const method = postIdInput.value ? 'PUT' : 'POST';
+        
+        try {
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(postData)
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Server returned ${response.status} ${response.statusText}`);
+            }
+            
+            postModal.style.display = 'none';
+            
+            if (postIdInput.value) {
+                showNotification('Post updated successfully!', false, true);
+            } else {
+                showNotification('Post created successfully!', false, true);
+            }
+            
+            loadPosts();
+        } catch (error) {
+            console.error('Error saving post:', error);
+            showNotification('Error saving post', true);
+        }
+    }
+    
+    // Event listeners
+    newPostBtn.addEventListener('click', createPost);
+    cancelBtn.addEventListener('click', () => postModal.style.display = 'none');
+    postForm.addEventListener('submit', savePost);
+    
+    // Close modal when clicking outside
+    window.addEventListener('click', (e) => {
+        if (e.target === postModal) {
+            postModal.style.display = 'none';
+        }
+    });
+    
+    // Load posts on page load
+    document.addEventListener('DOMContentLoaded', loadPosts);
+</script>
+</body>
+</html>
